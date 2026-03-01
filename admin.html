@@ -541,7 +541,10 @@
         <input id="productPrice" type="number" min="1" step="0.01" required />
 
         <label for="productImage">Image URL</label>
-        <input id="productImage" type="url" required />
+        <input id="productImage" type="url" placeholder="Paste image URL (optional if uploading file)" />
+
+        <label for="productImageFile">Or Upload Image</label>
+        <input id="productImageFile" type="file" accept="image/*" />
 
         <label for="productDescription">Description</label>
         <textarea id="productDescription" rows="2" required></textarea>

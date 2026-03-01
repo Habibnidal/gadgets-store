@@ -46,11 +46,44 @@ const productsCard = $("productsCard");
 const adminProductList = $("adminProductList");
 const adminLoginForm = $("adminLoginForm");
 const productForm = $("productForm");
+const productImageFile = $("productImageFile");
 const cancelEdit = $("cancelEdit");
 const logoutBtn = $("logoutBtn");
 
 function formatMoney(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Unable to read image file."));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function resolveProductImage(existingImage = "") {
+  const uploadedFile = productImageFile?.files?.[0];
+  if (uploadedFile) {
+    if (!uploadedFile.type.startsWith("image/")) {
+      alert("Please upload a valid image file.");
+      return null;
+    }
+
+    try {
+      return await fileToDataUrl(uploadedFile);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to process the uploaded image.");
+      return null;
+    }
+  }
+
+  const imageUrl = $("productImage").value.trim();
+  if (imageUrl) return imageUrl;
+  if (existingImage) return existingImage;
+  return "";
 }
 
 function normalizeProduct(product) {
@@ -114,6 +147,7 @@ function resetForm() {
   $("productId").value = "";
   $("productReturnPolicy").value = RETURN_POLICY_ASSURED;
   $("productStockStatus").value = STOCK_IN;
+  if (productImageFile) productImageFile.value = "";
 }
 
 function fillForm(id) {
@@ -123,10 +157,11 @@ function fillForm(id) {
   $("productId").value = product.id;
   $("productTitle").value = product.title;
   $("productPrice").value = product.price;
-  $("productImage").value = product.image;
+  $("productImage").value = product.image.startsWith("data:image/") ? "" : product.image;
   $("productDescription").value = product.description;
   $("productReturnPolicy").value = product.returnPolicy === RETURN_POLICY_NOT_ASSURED ? RETURN_POLICY_NOT_ASSURED : RETURN_POLICY_ASSURED;
   $("productStockStatus").value = product.stockStatus === STOCK_OUT ? STOCK_OUT : STOCK_IN;
+  if (productImageFile) productImageFile.value = "";
 }
 
 function isAdminLoggedIn() {
@@ -172,18 +207,27 @@ async function loginAdmin(event) {
   adminLoginForm.reset();
 }
 
-function saveProduct(event) {
+async function saveProduct(event) {
   event.preventDefault();
   if (!isAdminLoggedIn()) {
     alert("Admin login required.");
     return;
   }
 
+  const productId = $("productId").value || crypto.randomUUID();
+  const existingProduct = state.products.find((item) => item.id === productId);
+  const resolvedImage = await resolveProductImage(existingProduct?.image || "");
+  if (resolvedImage === null) return;
+  if (!resolvedImage) {
+    alert("Please provide an image URL or upload an image file.");
+    return;
+  }
+
   const payload = {
-    id: $("productId").value || crypto.randomUUID(),
+    id: productId,
     title: $("productTitle").value.trim(),
     price: Number($("productPrice").value),
-    image: $("productImage").value.trim(),
+    image: resolvedImage,
     description: $("productDescription").value.trim(),
     returnPolicy: $("productReturnPolicy").value,
     stockStatus: $("productStockStatus").value
