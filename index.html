@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naisham Gadgets</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Raleway:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f4ff;
+      --surface: #ffffff;
+      --surface-soft: #f7f9ff;
+      --text: #0d1b2e;
+      --muted: #556070;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --line: #e2e8f5;
+      --accent: #10b981;
+      --accent-light: #d1fae5;
+      --danger: #dc2626;
+      --shadow-sm: 0 1px 3px rgba(12,40,96,0.08), 0 1px 2px rgba(12,40,96,0.05);
+      --shadow: 0 4px 16px rgba(12,40,96,0.10), 0 2px 6px rgba(12,40,96,0.06);
+      --shadow-lg: 0 20px 50px rgba(12,40,96,0.13), 0 8px 20px rgba(12,40,96,0.08);
+      --radius: 1rem;
+      --radius-sm: 0.6rem;
+      --radius-lg: 1.4rem;
+      --header-h: 68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+      background-image:
+        radial-gradient(ellipse 65% 45% at 5% -5%, rgba(99,150,255,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 35% at 95% 8%, rgba(16,185,129,0.13) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 78% 98%, rgba(99,102,241,0.10) 0%, transparent 50%);
+    }
+
+    /* ─── HEADER ─── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 1.8rem;
+      height: var(--header-h);
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(226,232,245,0.9);
+      box-shadow: 0 1px 0 rgba(226,232,245,0.6), var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      animation: slideDown 0.45s ease both;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+    }
+
+    .brand-text .eyebrow {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--primary);
+      line-height: 1;
+    }
+
+    .brand-text h1 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.45rem;
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-text .subtitle { display: none; }
+
+    .header-actions {
+      display: flex;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: #fff;
+      padding: 0.58rem 1rem;
+      font: 600 0.84rem "Plus Jakarta Sans", sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--line);
+    }
+
+    .btn.ghost:hover {
+      background: var(--surface-soft);
+      border-color: #c7d4f0;
+      box-shadow: none;
+    }
+
+    .btn.wide {
+      width: 100%;
+      justify-content: center;
+      margin-top: 0.5rem;
+      padding: 0.85rem;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+    }
+
+    .btn.wide:hover {
+      background: linear-gradient(135deg, #1d4ed8, #4338ca);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+    }
+
+    .mini {
+      border: 0;
+      border-radius: 0.45rem;
+      padding: 0.3rem 0.48rem;
+      background: var(--surface-soft);
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+      color: var(--muted);
+      font-family: inherit;
+    }
+
+    .mini:hover { background: var(--primary-light); color: var(--primary-dark); }
+    .mini.danger { color: var(--danger); }
+    .mini.danger:hover { background: #fee2e2; }
+
+    /* ─── LAYOUT ─── */
+    .layout {
+      width: min(1300px, 95%);
+      margin: 1.8rem auto 3rem;
+      display: grid;
+      grid-template-columns: 1.3fr 0.7fr;
+      gap: 1.2rem;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── CARDS ─── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 1.4rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.25s;
+    }
+
+    .products { grid-row: span 2; }
+
+    /* ─── SECTION HEADS ─── */
+    .section-head {
+      margin-bottom: 1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h2 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .section-head h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 17px;
+      background: linear-gradient(to bottom, #2563eb, #7c3aed);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-head p {
+      margin-top: 0.28rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    /* ─── PRODUCT GRID ─── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+      gap: 1rem;
+    }
+
+    .product-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: #c7d4f0;
+    }
+
+    .product-card img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      background: var(--surface-soft);
+      transition: transform 0.4s ease;
+    }
+
+    .product-card:hover img { transform: scale(1.06); }
+
+    .product-body {
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+      flex: 1;
+    }
+
+    .product-card h3 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .price {
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 1.05rem;
+      font-family: "Raleway", sans-serif;
+    }
+
+    .desc {
+      color: var(--muted);
+      font-size: 0.79rem;
+      line-height: 1.45;
+    }
+
+    .btn-row {
+      margin-top: auto;
+      padding-top: 0.6rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+
+    .btn-row .btn {
+      font-size: 0.76rem;
+      padding: 0.48rem 0.4rem;
+      justify-content: center;
+    }
+
+    /* ─── CART / WISHLIST ─── */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.55rem 0.65rem;
+      background: var(--surface-soft);
+      font-size: 0.84rem;
+      transition: border-color 0.15s;
+    }
+
+    .list-item:hover { border-color: #c7d4f0; }
+
+    .item-actions {
+      display: flex;
+      gap: 0.28rem;
+      flex-shrink: 0;
+    }
+
+    .total-row {
+      margin-top: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--line);
+      padding-top: 0.7rem;
+      font-size: 0.88rem;
+    }
+
+    .total-row strong {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.15rem;
+      color: var(--primary-dark);
+    }
+
+    /* ─── SIDE COLUMN ─── */
+    .side-column {
+      display: grid;
+      gap: 1.2rem;
+      align-content: start;
+    }
+
+    .order-form { grid-column: 2; }
+
+    /* ─── FORMS ─── */
+    label {
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.63rem 0.78rem;
+      font: 500 0.88rem "Plus Jakarta Sans", sans-serif;
+      color: var(--text);
+      background: var(--surface-soft);
+      margin-bottom: 0.68rem;
+      transition: all 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    textarea { resize: vertical; min-height: 78px; }
+
+    .hint {
+      margin-top: 0.65rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    /* ─── HIDDEN / ADMIN ─── */
+    .hidden { display: none !important; }
+
+    .admin-actions {
+      display: flex;
+      gap: 0.55rem;
+    }
+
+    #adminPanel {
+      border: 1.5px dashed #93c5fd;
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    }
+
+    /* ─── DIALOG ─── */
+    dialog {
+      border: 0;
+      border-radius: var(--radius-lg);
+      padding: 0;
+      width: min(420px, 92vw);
+      box-shadow: var(--shadow-lg);
+    }
+
+    dialog::backdrop {
+      background: rgba(10,20,40,0.6);
+      backdrop-filter: blur(4px);
+    }
+
+    .auth-box { padding: 2rem; }
+
+    .auth-box h3 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      margin-bottom: 1.2rem;
+    }
+
+    .auth-row {
+      display: flex;
+      gap: 0.55rem;
+      margin-top: 0.3rem;
+    }
+
+    .auth-row .btn { flex: 1; justify-content: center; }
+
+    /* ─── ADMIN LAYOUT ─── */
+    .admin-layout {
+      width: min(980px, 94%);
+      margin: -1.5rem auto 2rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .link-btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .admin-product-row { align-items: flex-start; }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c7d4f0; border-radius: 3px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 1000px) {
+      .layout { grid-template-columns: 1fr; margin-top: 1.2rem; }
+      .products { grid-row: auto; }
+      .order-form { grid-column: 1; }
+      .admin-layout { margin-top: -1rem; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --header-h: 60px; }
+      .site-header { padding: 0 1rem; }
+      .brand-text h1 { font-size: 1.2rem; }
+      .brand-icon { width: 34px; height: 34px; font-size: 1rem; }
+      .layout { width: 97%; gap: 0.85rem; }
+      .card { padding: 1rem; border-radius: var(--radius); }
+      .product-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 0.7rem; }
+      .btn-row { grid-template-columns: 1fr; }
+      .btn { padding: 0.48rem 0.7rem; font-size: 0.78rem; }
+    }
+
+    @media (max-width: 360px) {
+      .product-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">
+        <p class="eyebrow">Smart Gadget Store</p>
+        <h1 id="brandName">Trust</h1>
+        <p class="subtitle">Shop quality gadgets in one click.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button id="authBtn" class="btn ghost">Login / Signup</button>
+      <button id="adminModeBtn" class="btn">Admin Page</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card products">
+      <div class="section-head">
+        <h2>Products</h2>
+        <p>Browse and add to cart or wishlist.</p>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+
+    <aside class="side-column">
+      <section class="card">
+        <div class="section-head">
+          <h2>Cart</h2>
+          <p>Review selected products.</p>
+        </div>
+        <div id="cartItems" class="list"></div>
+        <div class="total-row">
+          <span>Total</span>
+          <strong id="cartTotal">₹0.00</strong>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <h2>Wishlist</h2>
+          <p>Saved for later.</p>
+        </div>
+        <div id="wishlistItems" class="list"></div>
+      </section>
+    </aside>
+
+    <section class="card order-form">
+      <div class="section-head">
+        <h2>Customer Details</h2>
+        <p>Fill details and place order.</p>
+      </div>
+      <form id="checkoutForm">
+        <label for="customerName">Name</label>
+        <input id="customerName" type="text" placeholder="Your full name" required />
+
+        <label for="customerPhone">Phone Number</label>
+        <input id="customerPhone" type="tel" placeholder="e.g. +1 555 123 4567" required />
+
+        <label for="customerAddress">Address</label>
+        <textarea id="customerAddress" rows="3" placeholder="Street, city, zip code" required></textarea>
+
+        <label for="paymentMethod">Payment Method</label>
+        <select id="paymentMethod" required>
+          <option value="">Select payment method</option>
+          <option>Cash on Delivery</option>
+          <option>Bank Transfer</option>
+          <option>UPI / Mobile Wallet</option>
+          <option>Card Payment</option>
+        </select>
+
+        <button class="btn wide" type="submit">Submit Order on WhatsApp</button>
+      </form>
+      <p class="hint">Order details are shared with admin via WhatsApp.</p>
+    </section>
+
+    <section id="adminPanel" class="card admin hidden">
+      <div class="section-head">
+        <h2>Admin Product Manager</h2>
+        <p>Add, edit, and delete products.</p>
+      </div>
+      <form id="productForm">
+        <input id="productId" type="hidden" />
+        <label for="productTitle">Product Name</label>
+        <input id="productTitle" type="text" required />
+
+        <label for="productPrice">Price (INR)</label>
+        <input id="productPrice" type="number" min="1" step="0.01" required />
+
+        <label for="productImage">Image URL</label>
+        <input id="productImage" type="url" required />
+
+        <label for="productDescription">Description</label>
+        <textarea id="productDescription" rows="2" required></textarea>
+
+        <label for="productReturnPolicy">Return Policy</label>
+        <select id="productReturnPolicy" required>
+          <option value="assured">Assured</option>
+          <option value="not_assured">Not Assured</option>
+        </select>
+
+        <label for="productStockStatus">Stock Status</label>
+        <select id="productStockStatus" required>
+          <option value="in_stock">In Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+        </select>
+
+        <div class="admin-actions">
+          <button class="btn" type="submit">Save Product</button>
+          <button id="cancelEdit" class="btn ghost" type="button">Cancel</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <dialog id="authDialog">
+    <form id="authForm" method="dialog" class="auth-box">
+      <h3 id="authTitle">User Login</h3>
+      <input id="authName" type="text" placeholder="Name (for signup)" />
+      <input id="authEmail" type="email" placeholder="Email" required />
+      <input id="authPassword" type="password" placeholder="Password" required />
+      <div class="auth-row">
+        <button id="toggleAuthMode" class="btn ghost" type="button">Switch to Signup</button>
+        <button class="btn" type="submit">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>

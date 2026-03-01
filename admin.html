@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Naisham Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Raleway:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f0f4ff;
+      --surface: #ffffff;
+      --surface-soft: #f7f9ff;
+      --text: #0d1b2e;
+      --muted: #556070;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --line: #e2e8f5;
+      --accent: #10b981;
+      --accent-light: #d1fae5;
+      --danger: #dc2626;
+      --warning: #f59e0b;
+      --warning-light: #fef9c3;
+      --shadow-sm: 0 1px 3px rgba(12,40,96,0.08), 0 1px 2px rgba(12,40,96,0.05);
+      --shadow: 0 4px 16px rgba(12,40,96,0.10), 0 2px 6px rgba(12,40,96,0.06);
+      --shadow-lg: 0 20px 50px rgba(12,40,96,0.13), 0 8px 20px rgba(12,40,96,0.08);
+      --radius: 1rem;
+      --radius-sm: 0.6rem;
+      --radius-lg: 1.4rem;
+      --header-h: 68px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Plus Jakarta Sans", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      font-size: 15px;
+      line-height: 1.6;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 0% 0%, rgba(99,150,255,0.16) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 35% at 100% 5%, rgba(245,158,11,0.10) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 80% 100%, rgba(99,102,241,0.09) 0%, transparent 50%);
+    }
+
+    /* ─── HEADER ─── */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 0 1.8rem;
+      height: var(--header-h);
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-bottom: 1px solid rgba(226,232,245,0.9);
+      box-shadow: 0 1px 0 rgba(226,232,245,0.6), var(--shadow-sm);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      animation: slideDown 0.45s ease both;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to   { transform: translateY(0);     opacity: 1; }
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(245,158,11,0.38);
+    }
+
+    .brand-text .eyebrow {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--warning);
+      line-height: 1;
+    }
+
+    .brand-text h1 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #b45309, #dc2626);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .brand-text .subtitle { display: none; }
+
+    .header-actions {
+      display: flex;
+      gap: 0.55rem;
+      align-items: center;
+    }
+
+    /* ─── BUTTONS ─── */
+    .btn {
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--primary);
+      color: #fff;
+      padding: 0.58rem 1rem;
+      font: 600 0.84rem "Plus Jakarta Sans", sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+
+    .btn:active { transform: translateY(0); }
+
+    .btn.ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1.5px solid var(--line);
+    }
+
+    .btn.ghost:hover {
+      background: var(--surface-soft);
+      border-color: #c7d4f0;
+      box-shadow: none;
+    }
+
+    .btn.danger-btn {
+      background: #fef2f2;
+      color: var(--danger);
+      border: 1.5px solid #fecaca;
+    }
+
+    .btn.danger-btn:hover {
+      background: #fee2e2;
+      box-shadow: 0 4px 12px rgba(220,38,38,0.15);
+    }
+
+    .btn.wide {
+      width: 100%;
+      justify-content: center;
+      padding: 0.85rem;
+      font-size: 0.95rem;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+      margin-top: 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn.wide:hover {
+      background: linear-gradient(135deg, #1d4ed8, #4338ca);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.45);
+    }
+
+    .btn.wide.admin-login {
+      background: linear-gradient(135deg, #f59e0b, #ef4444);
+      box-shadow: 0 4px 15px rgba(245,158,11,0.3);
+    }
+
+    .btn.wide.admin-login:hover {
+      background: linear-gradient(135deg, #d97706, #dc2626);
+      box-shadow: 0 6px 20px rgba(245,158,11,0.45);
+    }
+
+    /* ─── LAYOUT ─── */
+    .admin-layout {
+      width: min(1200px, 95%);
+      margin: 1.8rem auto 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 1.2rem;
+      align-items: start;
+      animation: fadeUp 0.5s 0.1s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── CARDS ─── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.25s;
+    }
+
+    /* Login card — centered, narrower */
+    #adminLoginSection {
+      grid-column: 1 / -1;
+      max-width: 460px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* When logged in, login card hidden; form+list show side-by-side */
+    #adminContent {
+      border: 1.5px dashed #93c5fd;
+      background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    }
+
+    .hidden { display: none !important; }
+
+    /* ─── SECTION HEADS ─── */
+    .section-head {
+      margin-bottom: 1.1rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-head h2 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .section-head h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 17px;
+      background: linear-gradient(to bottom, #f59e0b, #ef4444);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .section-head p {
+      margin-top: 0.28rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    /* ─── FORMS ─── */
+    label {
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.63rem 0.78rem;
+      font: 500 0.88rem "Plus Jakarta Sans", sans-serif;
+      color: var(--text);
+      background: var(--surface-soft);
+      margin-bottom: 0.7rem;
+      transition: all 0.2s;
+      appearance: auto;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+
+    textarea { resize: vertical; min-height: 76px; }
+
+    /* ─── ADMIN ACTIONS ROW ─── */
+    .admin-actions {
+      display: flex;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      margin-top: 0.3rem;
+    }
+
+    .admin-actions .btn { flex: 1; justify-content: center; min-width: 80px; }
+
+    /* ─── PRODUCT LIST ─── */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 0.85rem;
+      background: var(--surface-soft);
+      transition: all 0.18s;
+    }
+
+    .list-item:hover {
+      border-color: #c7d4f0;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .list-item img {
+      width: 52px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 0.45rem;
+      flex-shrink: 0;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+
+    .item-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+
+    .item-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--text);
+    }
+
+    .item-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .item-price {
+      font-weight: 700;
+      color: var(--primary-dark);
+      font-family: "Raleway", sans-serif;
+    }
+
+    .item-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.14rem 0.42rem;
+      border-radius: 999px;
+    }
+
+    .item-badge.in-stock  { background: #ecfdf5; color: #047857; }
+    .item-badge.out-stock { background: #fef2f2; color: #991b1b; }
+    .item-badge.assured   { background: var(--accent-light); color: #065f46; }
+    .item-badge.not-assured { background: #fef3c7; color: #92400e; }
+
+    .item-actions {
+      display: flex;
+      gap: 0.3rem;
+      flex-shrink: 0;
+    }
+
+    .mini {
+      border: 0;
+      border-radius: 0.45rem;
+      padding: 0.32rem 0.52rem;
+      background: var(--surface-soft);
+      cursor: pointer;
+      font-size: 0.78rem;
+      transition: all 0.15s;
+      color: var(--muted);
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .mini:hover { background: var(--primary-light); color: var(--primary-dark); }
+    .mini.danger { color: var(--danger); }
+    .mini.danger:hover { background: #fee2e2; }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .stat-chip {
+      background: var(--surface-soft);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.7rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .stat-chip .stat-val {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      line-height: 1;
+    }
+
+    .stat-chip .stat-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    /* ─── LINK BTN ─── */
+    .link-btn {
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c7d4f0; border-radius: 3px; }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 860px) {
+      .admin-layout {
+        grid-template-columns: 1fr;
+        margin-top: 1.2rem;
+      }
+
+      #adminLoginSection { max-width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --header-h: 60px; }
+
+      .site-header { padding: 0 1rem; }
+
+      .brand-text h1 { font-size: 1.1rem; }
+      .brand-icon { width: 34px; height: 34px; font-size: 1rem; }
+
+      .admin-layout { width: 97%; gap: 0.85rem; }
+
+      .card { padding: 1rem; border-radius: var(--radius); }
+
+      .stats-bar { grid-template-columns: 1fr 1fr; }
+
+      .admin-actions { flex-direction: column; }
+      .admin-actions .btn { flex: unset; width: 100%; }
+
+      .list-item img { width: 42px; height: 34px; }
+
+      .btn { padding: 0.48rem 0.75rem; font-size: 0.8rem; }
+    }
+
+    @media (max-width: 400px) {
+      .stats-bar { grid-template-columns: 1fr; }
+      .item-meta { flex-direction: column; gap: 0.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-wrap">
+      <div class="brand-icon">🛡️</div>
+      <div class="brand-text">
+        <p class="eyebrow">Admin Dashboard</p>
+        <h1>Naisham Gadgets Admin</h1>
+        <p class="subtitle">Manage product catalog for your store.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a class="btn ghost link-btn" href="index.html">← Back to Shop</a>
+    </div>
+  </header>
+
+  <main class="admin-layout">
+    <section id="adminLoginSection" class="card">
+      <div class="section-head">
+        <h2>Admin Login</h2>
+        <p>Only admin can add/edit/delete products.</p>
+      </div>
+      <form id="adminLoginForm">
+        <label for="adminEmail">Email</label>
+        <input id="adminEmail" type="email" placeholder="Enter admin email" required />
+
+        <label for="adminPassword">Password</label>
+        <input id="adminPassword" type="password" placeholder="Enter password" required />
+
+        <button class="btn wide admin-login" type="submit">Login as Admin</button>
+      </form>
+    </section>
+
+    <section id="adminContent" class="card hidden">
+      <div class="section-head">
+        <h2>Product Manager</h2>
+        <p>Create new products or update existing ones.</p>
+      </div>
+
+      <form id="productForm">
+        <input id="productId" type="hidden" />
+        <label for="productTitle">Product Name</label>
+        <input id="productTitle" type="text" required />
+
+        <label for="productPrice">Price (INR)</label>
+        <input id="productPrice" type="number" min="1" step="0.01" required />
+
+        <label for="productImage">Image URL</label>
+        <input id="productImage" type="url" required />
+
+        <label for="productDescription">Description</label>
+        <textarea id="productDescription" rows="2" required></textarea>
+
+        <label for="productReturnPolicy">Return Policy</label>
+        <select id="productReturnPolicy" required>
+          <option value="assured">Assured</option>
+          <option value="not_assured">Not Assured</option>
+        </select>
+
+        <label for="productStockStatus">Stock Status</label>
+        <select id="productStockStatus" required>
+          <option value="in_stock">In Stock</option>
+          <option value="out_of_stock">Out of Stock</option>
+        </select>
+
+        <div class="admin-actions">
+          <button class="btn" type="submit">Save Product</button>
+          <button id="cancelEdit" class="btn ghost" type="button">Cancel</button>
+          <button id="logoutBtn" class="btn danger-btn" type="button">Logout</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="productsCard" class="card hidden">
+      <div class="section-head">
+        <h2>Current Products</h2>
+        <p>Click edit or delete to manage catalog.</p>
+      </div>
+      <div id="adminProductList" class="list"></div>
+    </section>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
