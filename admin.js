@@ -1,5 +1,5 @@
-const STORAGE_KEY = "naisham_products_v1";
 const ADMIN_LOGIN_ENDPOINT = "/api/admin-login";
+const PRODUCTS_ENDPOINT = "/api/products";
 const RETURN_POLICY_ASSURED = "assured";
 const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
@@ -7,7 +7,7 @@ const STOCK_OUT = "out_of_stock";
 
 const defaultProducts = [
   {
-    id: crypto.randomUUID(),
+    id: "smart-watch-x2",
     title: "Smart Watch X2",
     price: 59.99,
     image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=800&q=80",
@@ -16,7 +16,7 @@ const defaultProducts = [
     stockStatus: STOCK_IN
   },
   {
-    id: crypto.randomUUID(),
+    id: "noise-cancelling-headset",
     title: "Noise Cancelling Headset",
     price: 84.5,
     image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80",
@@ -25,7 +25,7 @@ const defaultProducts = [
     stockStatus: STOCK_IN
   },
   {
-    id: crypto.randomUUID(),
+    id: "portable-speaker-mini",
     title: "Portable Speaker Mini",
     price: 39,
     image: "https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?auto=format&fit=crop&w=800&q=80",
@@ -37,7 +37,8 @@ const defaultProducts = [
 
 const state = {
   products: [],
-  adminAuthenticated: false
+  adminAuthenticated: false,
+  adminCredentials: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -94,15 +95,62 @@ function normalizeProduct(product) {
   };
 }
 
-function loadProducts() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  const baseProducts = saved ? JSON.parse(saved) : defaultProducts;
-  state.products = baseProducts.map(normalizeProduct);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.products));
+function adminHeaders() {
+  if (!state.adminCredentials) return {};
+  return {
+    "x-admin-email": state.adminCredentials.email,
+    "x-admin-password": state.adminCredentials.password
+  };
 }
 
-function saveProducts() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.products));
+async function fetchProducts() {
+  const response = await fetch(PRODUCTS_ENDPOINT);
+  if (!response.ok) throw new Error("Unable to load products.");
+  const data = await response.json();
+  if (!Array.isArray(data?.products)) throw new Error("Invalid products payload.");
+  return data.products.map(normalizeProduct);
+}
+
+async function upsertProductOnServer(product) {
+  const response = await fetch(PRODUCTS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...adminHeaders()
+    },
+    body: JSON.stringify(product)
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to save product.");
+  }
+}
+
+async function deleteProductOnServer(id) {
+  const response = await fetch(PRODUCTS_ENDPOINT, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...adminHeaders()
+    },
+    body: JSON.stringify({ id })
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to delete product.");
+  }
+}
+
+async function loadProducts() {
+  try {
+    state.products = await fetchProducts();
+  } catch (error) {
+    console.error(error);
+    state.products = defaultProducts.map(normalizeProduct);
+    alert("Could not load shared products. Showing fallback catalog.");
+  }
 }
 
 function openAdminContent() {
@@ -165,7 +213,7 @@ function fillForm(id) {
 }
 
 function isAdminLoggedIn() {
-  return state.adminAuthenticated;
+  return state.adminAuthenticated && Boolean(state.adminCredentials);
 }
 
 function checkSession() {
@@ -202,6 +250,8 @@ async function loginAdmin(event) {
   }
 
   state.adminAuthenticated = true;
+  state.adminCredentials = { email, password };
+  await loadProducts();
   openAdminContent();
   renderList();
   adminLoginForm.reset();
@@ -234,31 +284,38 @@ async function saveProduct(event) {
   };
   const normalizedPayload = normalizeProduct(payload);
 
-  const idx = state.products.findIndex((item) => item.id === normalizedPayload.id);
-  if (idx >= 0) state.products[idx] = normalizedPayload;
-  else state.products.push(normalizedPayload);
-
-  saveProducts();
-  renderList();
-  resetForm();
+  try {
+    await upsertProductOnServer(normalizedPayload);
+    state.products = await fetchProducts();
+    renderList();
+    resetForm();
+  } catch (error) {
+    alert(error.message || "Failed to save product.");
+  }
 }
 
-function deleteProduct(id) {
+async function deleteProduct(id) {
   if (!isAdminLoggedIn()) return;
-  state.products = state.products.filter((item) => item.id !== id);
-  saveProducts();
-  renderList();
+
+  try {
+    await deleteProductOnServer(id);
+    state.products = await fetchProducts();
+    renderList();
+  } catch (error) {
+    alert(error.message || "Failed to delete product.");
+  }
 }
 
 function logout() {
   state.adminAuthenticated = false;
+  state.adminCredentials = null;
   closeAdminContent();
   resetForm();
 }
 
 function bindEvents() {
-  adminLoginForm.addEventListener("submit", loginAdmin);
-  productForm.addEventListener("submit", saveProduct);
+  adminLoginForm.addEventListener("submit", (event) => void loginAdmin(event));
+  productForm.addEventListener("submit", (event) => void saveProduct(event));
   cancelEdit.addEventListener("click", resetForm);
   logoutBtn.addEventListener("click", logout);
 
@@ -267,10 +324,14 @@ function bindEvents() {
     if (!(target instanceof HTMLElement)) return;
 
     if (target.dataset.edit) fillForm(target.dataset.edit);
-    if (target.dataset.delete) deleteProduct(target.dataset.delete);
+    if (target.dataset.delete) void deleteProduct(target.dataset.delete);
   });
 }
 
-loadProducts();
-checkSession();
-bindEvents();
+async function bootstrap() {
+  await loadProducts();
+  checkSession();
+  bindEvents();
+}
+
+void bootstrap();

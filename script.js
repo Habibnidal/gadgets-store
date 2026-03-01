@@ -1,7 +1,7 @@
-const STORAGE_KEY = "naisham_products_v1";
 const USER_KEY = "naisham_user_v1";
 const WHATSAPP_NUMBER = "918590889829";
 const ADMIN_LOGIN_ENDPOINT = "/api/admin-login";
+const PRODUCTS_ENDPOINT = "/api/products";
 const RETURN_POLICY_ASSURED = "assured";
 const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
@@ -10,17 +10,13 @@ const STOCK_OUT = "out_of_stock";
 function getStoredUser() {
   const rawUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
   if (!rawUser) return null;
-
-  // Never trust stored admin flags; require fresh server verification.
-  if (rawUser.isAdmin) {
-    return { ...rawUser, isAdmin: false };
-  }
+  if (rawUser.isAdmin) return { ...rawUser, isAdmin: false };
   return rawUser;
 }
 
 const defaultProducts = [
   {
-    id: crypto.randomUUID(),
+    id: "smart-watch-x2",
     title: "Smart Watch X2",
     price: 59.99,
     image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=800&q=80",
@@ -29,7 +25,7 @@ const defaultProducts = [
     stockStatus: STOCK_IN
   },
   {
-    id: crypto.randomUUID(),
+    id: "noise-cancelling-headset",
     title: "Noise Cancelling Headset",
     price: 84.5,
     image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=800&q=80",
@@ -38,7 +34,7 @@ const defaultProducts = [
     stockStatus: STOCK_IN
   },
   {
-    id: crypto.randomUUID(),
+    id: "portable-speaker-mini",
     title: "Portable Speaker Mini",
     price: 39,
     image: "https://images.unsplash.com/photo-1589256469067-ea99122bbdc4?auto=format&fit=crop&w=800&q=80",
@@ -54,7 +50,8 @@ const state = {
   wishlist: [],
   user: getStoredUser(),
   authMode: "login",
-  editingId: null
+  editingId: null,
+  adminCredentials: null
 };
 
 const $ = (id) => document.getElementById(id);
@@ -84,15 +81,62 @@ function normalizeProduct(product) {
   };
 }
 
-function initProducts() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  const baseProducts = saved ? JSON.parse(saved) : defaultProducts;
-  state.products = baseProducts.map(normalizeProduct);
-  saveProducts();
+function adminHeaders() {
+  if (!state.adminCredentials) return {};
+  return {
+    "x-admin-email": state.adminCredentials.email,
+    "x-admin-password": state.adminCredentials.password
+  };
 }
 
-function saveProducts() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state.products));
+async function fetchProducts() {
+  const response = await fetch(PRODUCTS_ENDPOINT);
+  if (!response.ok) throw new Error("Unable to fetch products.");
+  const data = await response.json();
+  if (!Array.isArray(data?.products)) throw new Error("Invalid products payload.");
+  return data.products.map(normalizeProduct);
+}
+
+async function upsertProductOnServer(product) {
+  const response = await fetch(PRODUCTS_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...adminHeaders()
+    },
+    body: JSON.stringify(product)
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to save product.");
+  }
+}
+
+async function deleteProductOnServer(id) {
+  const response = await fetch(PRODUCTS_ENDPOINT, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...adminHeaders()
+    },
+    body: JSON.stringify({ id })
+  });
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to delete product.");
+  }
+}
+
+async function initProducts() {
+  try {
+    state.products = await fetchProducts();
+  } catch (error) {
+    console.error(error);
+    state.products = defaultProducts.map(normalizeProduct);
+    alert("Could not load shared products. Showing fallback catalog.");
+  }
 }
 
 function formatMoney(value) {
@@ -108,11 +152,10 @@ function renderProducts() {
   const isAdmin = Boolean(state.user?.isAdmin);
 
   productGrid.innerHTML = state.products
-    .map(
-      (rawProduct) => {
-        const p = normalizeProduct(rawProduct);
-        const isOutOfStock = p.stockStatus === STOCK_OUT;
-        return `
+    .map((rawProduct) => {
+      const p = normalizeProduct(rawProduct);
+      const isOutOfStock = p.stockStatus === STOCK_OUT;
+      return `
       <article class="product-card">
         <img src="${p.image}" alt="${p.title}" />
         <h3>${p.title}</h3>
@@ -136,8 +179,7 @@ function renderProducts() {
         }
       </article>
     `;
-      }
-    )
+    })
     .join("");
 }
 
@@ -203,11 +245,8 @@ function addToCart(id) {
   }
 
   const existing = state.cart.find((c) => c.id === id);
-  if (existing) {
-    existing.qty += 1;
-  } else {
-    state.cart.push({ id, qty: 1 });
-  }
+  if (existing) existing.qty += 1;
+  else state.cart.push({ id, qty: 1 });
   renderCart();
 }
 
@@ -230,11 +269,8 @@ function removeWishlist(id) {
 }
 
 function updateUserButton() {
-  if (state.user) {
-    authBtn.textContent = `Logged in: ${state.user.name || state.user.email}`;
-  } else {
-    authBtn.textContent = "Login / Signup";
-  }
+  if (state.user) authBtn.textContent = `Logged in: ${state.user.name || state.user.email}`;
+  else authBtn.textContent = "Login / Signup";
 }
 
 function openAuthDialog() {
@@ -279,6 +315,7 @@ async function handleAuthSubmit(event) {
 
   const isAdmin = await verifyAdminLogin(email, password);
   state.user = { name: isAdmin ? "Admin" : email.split("@")[0], email, isAdmin };
+  state.adminCredentials = isAdmin ? { email, password } : null;
   localStorage.setItem(USER_KEY, JSON.stringify(state.user));
   authDialog.close();
   updateUserButton();
@@ -292,20 +329,16 @@ function toggleAuth() {
   authName.style.display = state.authMode === "signup" ? "block" : "none";
 }
 
-function toggleAdminPanel() {
-  if (!state.user || !state.user.isAdmin) {
-    alert("Admin login required.");
-    return;
-  }
-  adminPanel.classList.toggle("hidden");
-}
-
 function goToAdminPage() {
   window.location.href = "admin.html";
 }
 
-function saveProduct(event) {
+async function saveProduct(event) {
   event.preventDefault();
+  if (!state.user?.isAdmin || !state.adminCredentials) {
+    alert("Admin login required.");
+    return;
+  }
 
   const payload = {
     id: $("productId").value || crypto.randomUUID(),
@@ -318,18 +351,16 @@ function saveProduct(event) {
   };
   const normalizedPayload = normalizeProduct(payload);
 
-  const idx = state.products.findIndex((p) => p.id === normalizedPayload.id);
-  if (idx >= 0) {
-    state.products[idx] = normalizedPayload;
-  } else {
-    state.products.push(normalizedPayload);
+  try {
+    await upsertProductOnServer(normalizedPayload);
+    state.products = await fetchProducts();
+    productForm.reset();
+    $("productId").value = "";
+    state.editingId = null;
+    renderProducts();
+  } catch (error) {
+    alert(error.message || "Failed to save product.");
   }
-
-  saveProducts();
-  productForm.reset();
-  $("productId").value = "";
-  state.editingId = null;
-  renderProducts();
 }
 
 function startEditProduct(id) {
@@ -348,15 +379,20 @@ function startEditProduct(id) {
   state.editingId = id;
 }
 
-function deleteProduct(id) {
-  if (!state.user || !state.user.isAdmin) return;
-  state.products = state.products.filter((p) => p.id !== id);
-  state.cart = state.cart.filter((c) => c.id !== id);
-  state.wishlist = state.wishlist.filter((w) => w !== id);
-  saveProducts();
-  renderProducts();
-  renderCart();
-  renderWishlist();
+async function deleteProduct(id) {
+  if (!state.user?.isAdmin || !state.adminCredentials) return;
+
+  try {
+    await deleteProductOnServer(id);
+    state.products = await fetchProducts();
+    state.cart = state.cart.filter((c) => c.id !== id);
+    state.wishlist = state.wishlist.filter((w) => w !== id);
+    renderProducts();
+    renderCart();
+    renderWishlist();
+  } catch (error) {
+    alert(error.message || "Failed to delete product.");
+  }
 }
 
 function handleCheckout(event) {
@@ -402,16 +438,14 @@ function bindEvents() {
     if (target.dataset.addCart) addToCart(target.dataset.addCart);
     if (target.dataset.addWish) addToWishlist(target.dataset.addWish);
     if (target.dataset.editProduct) startEditProduct(target.dataset.editProduct);
-    if (target.dataset.deleteProduct) deleteProduct(target.dataset.deleteProduct);
+    if (target.dataset.deleteProduct) void deleteProduct(target.dataset.deleteProduct);
   });
 
   cartItems.addEventListener("click", (event) => {
     const target = event.target;
     if (!(target instanceof HTMLElement)) return;
 
-    if (target.dataset.inc) {
-      addToCart(target.dataset.inc);
-    }
+    if (target.dataset.inc) addToCart(target.dataset.inc);
     if (target.dataset.dec) {
       const row = state.cart.find((x) => x.id === target.dataset.dec);
       if (row) row.qty -= 1;
@@ -434,7 +468,7 @@ function bindEvents() {
   authForm.addEventListener("submit", handleAuthSubmit);
   toggleAuthMode.addEventListener("click", toggleAuth);
   adminModeBtn.addEventListener("click", goToAdminPage);
-  productForm.addEventListener("submit", saveProduct);
+  productForm.addEventListener("submit", (event) => void saveProduct(event));
   cancelEdit.addEventListener("click", () => {
     state.editingId = null;
     productForm.reset();
@@ -443,12 +477,15 @@ function bindEvents() {
     $("productStockStatus").value = STOCK_IN;
   });
   $("checkoutForm").addEventListener("submit", handleCheckout);
-
 }
 
-initProducts();
-renderProducts();
-renderCart();
-renderWishlist();
-updateUserButton();
-bindEvents();
+async function bootstrap() {
+  await initProducts();
+  renderProducts();
+  renderCart();
+  renderWishlist();
+  updateUserButton();
+  bindEvents();
+}
+
+void bootstrap();
