@@ -1,7 +1,7 @@
 const USER_KEY = "naisham_user_v1";
-const WHATSAPP_NUMBER = "918590889829";
 const ADMIN_LOGIN_ENDPOINT = "/api/admin-login";
 const PRODUCTS_ENDPOINT = "/api/products";
+const SETTINGS_ENDPOINT = "/api/settings";
 const RETURN_POLICY_ASSURED = "assured";
 const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
@@ -44,10 +44,57 @@ const defaultProducts = [
   }
 ];
 
+const defaultSettings = {
+  brandName: "Trust",
+  brandEyebrow: "Smart Gadget Store",
+  brandSubtitle: "Shop quality gadgets in one click.",
+  logo: "assets/trust-logo.png",
+  heroTitle: "Smart Gadgets. Smarter Living.",
+  heroSubtitle: "Curated picks, clear pricing, and fast support for your everyday tech.",
+  heroBadge: "Trusted Gadget Partner",
+  heroCtaText: "Chat on WhatsApp",
+  heroCtaLink: "",
+  whatsappNumber: "918590889829",
+  contactEmail: "support@naishamgadgets.com",
+  contactPhone: "+91 85908 89829",
+  contactAddress: "Kolkata, India",
+  themePrimary: "#2563eb",
+  themePrimaryDark: "#1d4ed8",
+  themePrimaryLight: "#dbeafe",
+  themeAccent: "#10b981",
+  themeBackground: "#f0f4ff",
+  heroStats: [
+    { id: "deliveries", value: "250+", label: "Gadgets Delivered" },
+    { id: "rating", value: "4.9★", label: "Customer Rating" },
+    { id: "support", value: "24/7", label: "WhatsApp Support" }
+  ],
+  features: [
+    {
+      id: "fast-delivery",
+      title: "Fast Delivery",
+      description: "Quick dispatch with reliable tracking updates.",
+      icon: "🚚"
+    },
+    {
+      id: "secure-payments",
+      title: "Secure Payments",
+      description: "Multiple payment options with trusted checkout.",
+      icon: "🔒"
+    },
+    {
+      id: "support-team",
+      title: "Friendly Support",
+      description: "We answer your questions in minutes.",
+      icon: "💬"
+    }
+  ]
+};
+
 const state = {
   products: [],
   cart: [],
   wishlist: [],
+  settings: defaultSettings,
   user: getStoredUser(),
   authMode: "login",
   editingId: null,
@@ -72,6 +119,7 @@ const authEmail = $("authEmail");
 const authPassword = $("authPassword");
 const productForm = $("productForm");
 const cancelEdit = $("cancelEdit");
+const featuresGrid = $("featuresGrid");
 
 function normalizeProduct(product) {
   return {
@@ -86,6 +134,15 @@ function adminHeaders() {
   return {
     "x-admin-email": state.adminCredentials.email,
     "x-admin-password": state.adminCredentials.password
+  };
+}
+
+function normalizeSettings(settings = {}) {
+  return {
+    ...defaultSettings,
+    ...settings,
+    heroStats: Array.isArray(settings.heroStats) ? settings.heroStats : defaultSettings.heroStats,
+    features: Array.isArray(settings.features) ? settings.features : defaultSettings.features
   };
 }
 
@@ -129,6 +186,14 @@ async function deleteProductOnServer(id) {
   }
 }
 
+async function fetchSettings() {
+  const response = await fetch(SETTINGS_ENDPOINT);
+  if (!response.ok) throw new Error("Unable to fetch settings.");
+  const data = await response.json();
+  if (!data?.settings) throw new Error("Invalid settings payload.");
+  return normalizeSettings(data.settings);
+}
+
 async function initProducts() {
   try {
     state.products = await fetchProducts();
@@ -139,8 +204,107 @@ async function initProducts() {
   }
 }
 
+async function initSettings() {
+  try {
+    state.settings = await fetchSettings();
+  } catch (error) {
+    console.error(error);
+    state.settings = { ...defaultSettings };
+  }
+}
+
 function formatMoney(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
+}
+
+function applyTheme(settings) {
+  const root = document.documentElement;
+  root.style.setProperty("--primary", settings.themePrimary);
+  root.style.setProperty("--primary-dark", settings.themePrimaryDark);
+  root.style.setProperty("--primary-light", settings.themePrimaryLight);
+  root.style.setProperty("--accent", settings.themeAccent);
+  root.style.setProperty("--bg", settings.themeBackground);
+}
+
+function applySettings() {
+  const settings = normalizeSettings(state.settings);
+  state.settings = settings;
+
+  const brandLogo = $("brandLogo");
+  const brandName = $("brandName");
+  const brandEyebrow = $("brandEyebrow");
+  const brandSubtitle = $("brandSubtitle");
+  const heroTitle = $("heroTitle");
+  const heroSubtitle = $("heroSubtitle");
+  const heroBadge = $("heroBadge");
+  const heroCta = $("heroCta");
+  const footerPhone = $("footerPhone");
+  const footerEmail = $("footerEmail");
+  const footerAddress = $("footerAddress");
+  const footerWhatsApp = $("footerWhatsApp");
+
+  if (brandLogo) brandLogo.src = settings.logo || defaultSettings.logo;
+  if (brandName) brandName.textContent = settings.brandName;
+  if (brandEyebrow) brandEyebrow.textContent = settings.brandEyebrow;
+  if (brandSubtitle) brandSubtitle.textContent = settings.brandSubtitle;
+  if (heroTitle) heroTitle.textContent = settings.heroTitle;
+  if (heroSubtitle) heroSubtitle.textContent = settings.heroSubtitle;
+  if (heroBadge) heroBadge.textContent = settings.heroBadge;
+
+  const whatsappNumber = settings.whatsappNumber || defaultSettings.whatsappNumber;
+  const ctaLink = settings.heroCtaLink || `https://wa.me/${whatsappNumber}`;
+  if (heroCta) {
+    heroCta.textContent = settings.heroCtaText || defaultSettings.heroCtaText;
+    heroCta.href = ctaLink;
+  }
+
+  if (footerPhone) footerPhone.textContent = settings.contactPhone;
+  if (footerEmail) footerEmail.textContent = settings.contactEmail;
+  if (footerAddress) footerAddress.textContent = settings.contactAddress;
+  if (footerWhatsApp) footerWhatsApp.textContent = `WhatsApp: ${settings.whatsappNumber}`;
+
+  applyTheme(settings);
+  renderHeroStats();
+  renderFeatures();
+}
+
+function renderHeroStats() {
+  const stats = normalizeSettings(state.settings).heroStats;
+  const statOneValue = $("heroStatOneValue");
+  const statOneLabel = $("heroStatOneLabel");
+  const statTwoValue = $("heroStatTwoValue");
+  const statTwoLabel = $("heroStatTwoLabel");
+  const statThreeValue = $("heroStatThreeValue");
+  const statThreeLabel = $("heroStatThreeLabel");
+
+  const [one, two, three] = stats;
+  if (one && statOneValue) statOneValue.textContent = one.value;
+  if (one && statOneLabel) statOneLabel.textContent = one.label;
+  if (two && statTwoValue) statTwoValue.textContent = two.value;
+  if (two && statTwoLabel) statTwoLabel.textContent = two.label;
+  if (three && statThreeValue) statThreeValue.textContent = three.value;
+  if (three && statThreeLabel) statThreeLabel.textContent = three.label;
+}
+
+function renderFeatures() {
+  const settings = normalizeSettings(state.settings);
+  if (!featuresGrid) return;
+  if (!settings.features.length) {
+    featuresGrid.innerHTML = "<p class='hint'>No features configured.</p>";
+    return;
+  }
+
+  featuresGrid.innerHTML = settings.features
+    .map(
+      (feature) => `
+      <div class="feature-card">
+        <div class="feature-icon">${feature.icon || "⭐"}</div>
+        <h3>${feature.title}</h3>
+        <p>${feature.description || ""}</p>
+      </div>
+    `
+    )
+    .join("");
 }
 
 function renderProducts() {
@@ -426,7 +590,8 @@ function handleCheckout(event) {
     `Products:%0A${encodeURIComponent(lines.join("\n"))}%0A%0A` +
     `Total: ${encodeURIComponent(total)}`;
 
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+  const whatsappNumber = state.settings.whatsappNumber || defaultSettings.whatsappNumber;
+  window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
   alert("Order submitted. WhatsApp is opening.");
 }
 
@@ -480,7 +645,9 @@ function bindEvents() {
 }
 
 async function bootstrap() {
+  await initSettings();
   await initProducts();
+  applySettings();
   renderProducts();
   renderCart();
   renderWishlist();

@@ -459,6 +459,17 @@
       align-items: center;
     }
 
+    .section-divider {
+      margin: 1rem 0 0.6rem;
+      padding-top: 0.4rem;
+      border-top: 1px dashed var(--line);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     /* ─── SCROLLBAR ─── */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -577,6 +588,120 @@
           <button id="logoutBtn" class="btn danger-btn" type="button">Logout</button>
         </div>
       </form>
+    </section>
+
+    <section id="settingsCard" class="card hidden">
+      <div class="section-head">
+        <h2>Site Settings</h2>
+        <p>Update brand, hero, contact, and theme details.</p>
+      </div>
+      <form id="settingsForm">
+        <div class="section-divider">Brand</div>
+        <label for="siteBrandName">Brand Name</label>
+        <input id="siteBrandName" type="text" required />
+
+        <label for="siteBrandEyebrow">Brand Eyebrow</label>
+        <input id="siteBrandEyebrow" type="text" />
+
+        <label for="siteBrandSubtitle">Brand Subtitle</label>
+        <input id="siteBrandSubtitle" type="text" />
+
+        <label for="siteLogoUrl">Logo URL</label>
+        <input id="siteLogoUrl" type="url" placeholder="https://..." />
+
+        <label for="siteLogoFile">Or Upload Logo</label>
+        <input id="siteLogoFile" type="file" accept="image/*" />
+
+        <div class="section-divider">Hero</div>
+        <label for="siteHeroTitle">Hero Title</label>
+        <input id="siteHeroTitle" type="text" />
+
+        <label for="siteHeroSubtitle">Hero Subtitle</label>
+        <textarea id="siteHeroSubtitle" rows="2"></textarea>
+
+        <label for="siteHeroBadge">Hero Badge</label>
+        <input id="siteHeroBadge" type="text" />
+
+        <label for="siteHeroCtaText">Hero CTA Text</label>
+        <input id="siteHeroCtaText" type="text" />
+
+        <label for="siteHeroCtaLink">Hero CTA Link (optional)</label>
+        <input id="siteHeroCtaLink" type="url" placeholder="https://wa.me/..." />
+
+        <div class="section-divider">Hero Stats</div>
+        <label for="heroStatOneValue">Stat 1 Value</label>
+        <input id="heroStatOneValue" type="text" />
+        <label for="heroStatOneLabel">Stat 1 Label</label>
+        <input id="heroStatOneLabel" type="text" />
+
+        <label for="heroStatTwoValue">Stat 2 Value</label>
+        <input id="heroStatTwoValue" type="text" />
+        <label for="heroStatTwoLabel">Stat 2 Label</label>
+        <input id="heroStatTwoLabel" type="text" />
+
+        <label for="heroStatThreeValue">Stat 3 Value</label>
+        <input id="heroStatThreeValue" type="text" />
+        <label for="heroStatThreeLabel">Stat 3 Label</label>
+        <input id="heroStatThreeLabel" type="text" />
+
+        <div class="section-divider">Contact</div>
+        <label for="siteWhatsapp">WhatsApp Number</label>
+        <input id="siteWhatsapp" type="text" placeholder="918590889829" />
+
+        <label for="siteContactEmail">Contact Email</label>
+        <input id="siteContactEmail" type="email" />
+
+        <label for="siteContactPhone">Contact Phone</label>
+        <input id="siteContactPhone" type="text" />
+
+        <label for="siteContactAddress">Contact Address</label>
+        <input id="siteContactAddress" type="text" />
+
+        <div class="section-divider">Theme</div>
+        <label for="themePrimary">Primary Color</label>
+        <input id="themePrimary" type="color" />
+
+        <label for="themePrimaryDark">Primary Dark</label>
+        <input id="themePrimaryDark" type="color" />
+
+        <label for="themePrimaryLight">Primary Light</label>
+        <input id="themePrimaryLight" type="color" />
+
+        <label for="themeAccent">Accent</label>
+        <input id="themeAccent" type="color" />
+
+        <label for="themeBackground">Background</label>
+        <input id="themeBackground" type="color" />
+
+        <div class="admin-actions">
+          <button class="btn" type="submit">Save Settings</button>
+          <button id="resetSettings" class="btn ghost" type="button">Reset Form</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="featuresCard" class="card hidden">
+      <div class="section-head">
+        <h2>Feature Highlights</h2>
+        <p>Add or edit the feature cards shown on the site.</p>
+      </div>
+      <form id="featureForm">
+        <input id="featureId" type="hidden" />
+        <label for="featureTitle">Feature Title</label>
+        <input id="featureTitle" type="text" required />
+
+        <label for="featureDescription">Feature Description</label>
+        <textarea id="featureDescription" rows="2"></textarea>
+
+        <label for="featureIcon">Feature Icon (emoji or short text)</label>
+        <input id="featureIcon" type="text" />
+
+        <div class="admin-actions">
+          <button class="btn" type="submit">Save Feature</button>
+          <button id="cancelFeatureEdit" class="btn ghost" type="button">Cancel</button>
+        </div>
+      </form>
+      <div id="featureList" class="list"></div>
     </section>
 
     <section id="productsCard" class="card hidden">

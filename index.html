@@ -118,7 +118,11 @@
       background-clip: text;
     }
 
-    .brand-text .subtitle { display: none; }
+    .brand-text .subtitle {
+      margin-top: 0.15rem;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
 
     .header-actions {
       display: flex;
@@ -204,6 +208,10 @@
       animation: fadeUp 0.5s 0.1s ease both;
     }
 
+    .span-all {
+      grid-column: 1 / -1;
+    }
+
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
@@ -220,6 +228,72 @@
     }
 
     .products { grid-row: span 2; }
+
+    /* --- HERO --- */
+    .hero-card {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.5rem;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(37,99,235,0.15), rgba(16,185,129,0.12));
+      border: 1px solid rgba(37,99,235,0.2);
+      padding: 1.8rem;
+    }
+
+    .hero-text h2 {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+    }
+
+    .hero-text p {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: var(--surface);
+      border-radius: 999px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 0.65rem;
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.65rem;
+    }
+
+    .hero-stat {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem;
+    }
+
+    .hero-stat strong {
+      font-family: "Raleway", sans-serif;
+      font-size: 1.2rem;
+      display: block;
+      color: var(--primary-dark);
+    }
+
+    .hero-stat span {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
 
     /* ─── SECTION HEADS ─── */
     .section-head {
@@ -384,6 +458,52 @@
 
     .order-form { grid-column: 2; }
 
+    /* --- FEATURES --- */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.9rem;
+    }
+
+    .feature-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: var(--surface);
+      display: grid;
+      gap: 0.4rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: var(--accent-light);
+      color: var(--accent);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .feature-card h3 {
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .feature-card p {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
     /* ─── FORMS ─── */
     label {
       display: block;
@@ -478,6 +598,31 @@
       align-items: center;
     }
 
+    /* --- FOOTER --- */
+    .site-footer {
+      width: min(1200px, 92%);
+      margin: 0 auto 2.5rem;
+      padding: 1.2rem 1.5rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .footer-block h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .footer-block p {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
     .admin-product-row { align-items: flex-start; }
 
     /* ─── SCROLLBAR ─── */
@@ -491,6 +636,8 @@
       .products { grid-row: auto; }
       .order-form { grid-column: 1; }
       .admin-layout { margin-top: -1rem; }
+      .hero-card { grid-template-columns: 1fr; }
+      .hero-stats { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 600px) {
@@ -503,6 +650,9 @@
       .product-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 0.7rem; }
       .btn-row { grid-template-columns: 1fr; }
       .btn { padding: 0.48rem 0.7rem; font-size: 0.78rem; }
+      .hero-text h2 { font-size: 1.35rem; }
+      .hero-stats { grid-template-columns: 1fr; }
+      .site-footer { width: 94%; }
     }
 
     @media (max-width: 360px) {
@@ -514,12 +664,12 @@
   <header class="site-header">
     <div class="brand-wrap">
       <div class="brand-icon">
-        <img src="assets/trust-logo.png" alt="Trust logo" />
+        <img id="brandLogo" src="assets/trust-logo.png" alt="Trust logo" />
       </div>
       <div class="brand-text">
-        <p class="eyebrow">Smart Gadget Store</p>
+        <p id="brandEyebrow" class="eyebrow">Smart Gadget Store</p>
         <h1 id="brandName">Trust</h1>
-        <p class="subtitle">Shop quality gadgets in one click.</p>
+        <p id="brandSubtitle" class="subtitle">Shop quality gadgets in one click.</p>
       </div>
     </div>
     <div class="header-actions">
@@ -529,6 +679,28 @@
   </header>
 
   <main class="layout">
+    <section class="card hero-card span-all">
+      <div class="hero-text">
+        <div class="hero-badge" id="heroBadge">Trusted Gadget Partner</div>
+        <h2 id="heroTitle">Smart Gadgets. Smarter Living.</h2>
+        <p id="heroSubtitle">Curated picks, clear pricing, and fast support for your everyday tech.</p>
+        <a id="heroCta" class="btn" href="#" target="_blank" rel="noopener">Chat on WhatsApp</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <strong id="heroStatOneValue">250+</strong>
+          <span id="heroStatOneLabel">Gadgets Delivered</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="heroStatTwoValue">4.9★</strong>
+          <span id="heroStatTwoLabel">Customer Rating</span>
+        </div>
+        <div class="hero-stat">
+          <strong id="heroStatThreeValue">24/7</strong>
+          <span id="heroStatThreeLabel">WhatsApp Support</span>
+        </div>
+      </div>
+    </section>
     <section class="card products">
       <div class="section-head">
         <h2>Products</h2>
@@ -625,7 +797,31 @@
         </div>
       </form>
     </section>
+
+    <section id="featuresSection" class="card span-all">
+      <div class="section-head">
+        <h2>Why Shop With Us</h2>
+        <p>Service highlights powered by your admin settings.</p>
+      </div>
+      <div id="featuresGrid" class="features-grid"></div>
+    </section>
   </main>
+
+  <footer class="site-footer">
+    <div class="footer-block">
+      <h4>Contact</h4>
+      <p id="footerPhone">+91 85908 89829</p>
+      <p id="footerEmail">support@naishamgadgets.com</p>
+    </div>
+    <div class="footer-block">
+      <h4>Address</h4>
+      <p id="footerAddress">Kolkata, India</p>
+    </div>
+    <div class="footer-block">
+      <h4>Order Support</h4>
+      <p id="footerWhatsApp">WhatsApp: +91 85908 89829</p>
+    </div>
+  </footer>
 
   <dialog id="authDialog">
     <form id="authForm" method="dialog" class="auth-box">
