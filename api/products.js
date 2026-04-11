@@ -75,6 +75,14 @@ function isKvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
+function isProd() {
+  return process.env.VERCEL === "1" || process.env.NODE_ENV === "production";
+}
+
+function setNoCache(res) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+}
+
 async function callKv(path, method, body) {
   const response = await fetch(`${process.env.KV_REST_API_URL}${path}`, {
     method,
@@ -120,6 +128,15 @@ async function writeProducts(products) {
 }
 
 module.exports = async (req, res) => {
+  setNoCache(res);
+
+  if (isProd() && !isKvConfigured()) {
+    return res.status(500).json({
+      ok: false,
+      error: "KV is not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN."
+    });
+  }
+
   if (req.method === "GET") {
     try {
       const products = await readProducts();
