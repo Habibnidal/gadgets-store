@@ -3,6 +3,7 @@ const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
 const STOCK_OUT = "out_of_stock";
 const PRODUCTS_KEY = process.env.PRODUCTS_KV_KEY || "naisham_products_v1";
+const MAX_TEXT = 3000;
 
 const defaultProducts = [
   {
@@ -35,15 +36,43 @@ const defaultProducts = [
 ];
 
 function normalizeProduct(product) {
+  const id = cleanText(product?.id, 120);
+  const title = cleanText(product?.title, 180);
+  const image = cleanImageUrl(product?.image);
+  const description = cleanText(product?.description, MAX_TEXT);
+  const price = Number(product?.price || 0);
+
   return {
-    id: String(product?.id || "").trim(),
-    title: String(product?.title || "").trim(),
-    price: Number(product?.price || 0),
-    image: String(product?.image || "").trim(),
-    description: String(product?.description || "").trim(),
+    id,
+    title,
+    price: Number.isFinite(price) ? price : 0,
+    image,
+    description,
     returnPolicy: product?.returnPolicy === RETURN_POLICY_NOT_ASSURED ? RETURN_POLICY_NOT_ASSURED : RETURN_POLICY_ASSURED,
     stockStatus: product?.stockStatus === STOCK_OUT ? STOCK_OUT : STOCK_IN
   };
+}
+
+function cleanText(value, maxLength) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, maxLength);
+}
+
+function cleanImageUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (raw.startsWith("data:image/")) return raw;
+
+  try {
+    const parsed = new URL(raw, "https://example.com");
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return raw;
+  } catch (error) {
+    return "";
+  }
+
+  return "";
 }
 
 function sanitizeProducts(raw) {

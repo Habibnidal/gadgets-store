@@ -372,6 +372,38 @@
       flex: 1;
     }
 
+    .product-meta {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-top: 0.15rem;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 0.18rem 0.48rem;
+      letter-spacing: 0.02em;
+      border: 1px solid var(--line);
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .pill-ok {
+      background: #ecfdf5;
+      color: #065f46;
+      border-color: #a7f3d0;
+    }
+
+    .pill-danger {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: #fecaca;
+    }
+
     .product-card h3 {
       font-size: 0.92rem;
       font-weight: 700;
@@ -403,6 +435,13 @@
       font-size: 0.76rem;
       padding: 0.48rem 0.4rem;
       justify-content: center;
+    }
+
+    .btn[disabled] {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     /* ─── CART / WISHLIST ─── */
@@ -538,6 +577,16 @@
       margin-top: 0.65rem;
       color: var(--muted);
       font-size: 0.78rem;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-sm);
+      background: var(--surface-soft);
+      padding: 0.7rem 0.8rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
     }
 
     /* ─── HIDDEN / ADMIN ─── */
@@ -692,7 +741,7 @@
           <span id="heroStatOneLabel">Gadgets Delivered</span>
         </div>
         <div class="hero-stat">
-          <strong id="heroStatTwoValue">4.9★</strong>
+          <strong id="heroStatTwoValue">4.9/5</strong>
           <span id="heroStatTwoLabel">Customer Rating</span>
         </div>
         <div class="hero-stat">
@@ -718,7 +767,7 @@
         <div id="cartItems" class="list"></div>
         <div class="total-row">
           <span>Total</span>
-          <strong id="cartTotal">₹0.00</strong>
+          <strong id="cartTotal">INR 0.00</strong>
         </div>
       </section>
 

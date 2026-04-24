@@ -6,6 +6,8 @@ const RETURN_POLICY_ASSURED = "assured";
 const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
 const STOCK_OUT = "out_of_stock";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80";
 
 function getStoredUser() {
   const rawUser = JSON.parse(localStorage.getItem(USER_KEY) || "null");
@@ -65,7 +67,7 @@ const defaultSettings = {
   themeBackground: "#f0f4ff",
   heroStats: [
     { id: "deliveries", value: "250+", label: "Gadgets Delivered" },
-    { id: "rating", value: "4.9★", label: "Customer Rating" },
+    { id: "rating", value: "4.9/5", label: "Customer Rating" },
     { id: "support", value: "24/7", label: "WhatsApp Support" }
   ],
   features: [
@@ -120,6 +122,37 @@ const authPassword = $("authPassword");
 const productForm = $("productForm");
 const cancelEdit = $("cancelEdit");
 const featuresGrid = $("featuresGrid");
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sanitizeWhatsAppNumber(input) {
+  const digits = String(input || "").replace(/\D/g, "");
+  return digits || defaultSettings.whatsappNumber;
+}
+
+function safeUrl(raw, options = {}) {
+  const { allowDataImage = false, fallback = "#" } = options;
+  const value = String(raw || "").trim();
+  if (!value) return fallback;
+
+  if (allowDataImage && value.startsWith("data:image/")) return value;
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
+  } catch (error) {
+    return fallback;
+  }
+
+  return fallback;
+}
 
 function normalizeProduct(product) {
   return {
@@ -251,8 +284,8 @@ function applySettings() {
   if (heroSubtitle) heroSubtitle.textContent = settings.heroSubtitle;
   if (heroBadge) heroBadge.textContent = settings.heroBadge;
 
-  const whatsappNumber = settings.whatsappNumber || defaultSettings.whatsappNumber;
-  const ctaLink = settings.heroCtaLink || `https://wa.me/${whatsappNumber}`;
+  const whatsappNumber = sanitizeWhatsAppNumber(settings.whatsappNumber);
+  const ctaLink = safeUrl(settings.heroCtaLink, { fallback: `https://wa.me/${whatsappNumber}` });
   if (heroCta) {
     heroCta.textContent = settings.heroCtaText || defaultSettings.heroCtaText;
     heroCta.href = ctaLink;
@@ -261,7 +294,7 @@ function applySettings() {
   if (footerPhone) footerPhone.textContent = settings.contactPhone;
   if (footerEmail) footerEmail.textContent = settings.contactEmail;
   if (footerAddress) footerAddress.textContent = settings.contactAddress;
-  if (footerWhatsApp) footerWhatsApp.textContent = `WhatsApp: ${settings.whatsappNumber}`;
+  if (footerWhatsApp) footerWhatsApp.textContent = `WhatsApp: ${whatsappNumber}`;
 
   applyTheme(settings);
   renderHeroStats();
@@ -298,9 +331,9 @@ function renderFeatures() {
     .map(
       (feature) => `
       <div class="feature-card">
-        <div class="feature-icon">${feature.icon || "⭐"}</div>
-        <h3>${feature.title}</h3>
-        <p>${feature.description || ""}</p>
+        <div class="feature-icon">${escapeHtml(feature.icon || "*")}</div>
+        <h3>${escapeHtml(feature.title)}</h3>
+        <p>${escapeHtml(feature.description || "")}</p>
       </div>
     `
     )
@@ -309,7 +342,7 @@ function renderFeatures() {
 
 function renderProducts() {
   if (!state.products.length) {
-    productGrid.innerHTML = "<p>No products available.</p>";
+    productGrid.innerHTML = "<div class='empty-state'>No products available right now.</div>";
     return;
   }
 
@@ -319,28 +352,33 @@ function renderProducts() {
     .map((rawProduct) => {
       const p = normalizeProduct(rawProduct);
       const isOutOfStock = p.stockStatus === STOCK_OUT;
+      const imageSrc = safeUrl(p.image, { allowDataImage: true, fallback: FALLBACK_IMAGE });
       return `
       <article class="product-card">
-        <img src="${p.image}" alt="${p.title}" />
-        <h3>${p.title}</h3>
-        <p class="price">${formatMoney(p.price)}</p>
-        <p class="desc">${p.description}</p>
-        <p class="hint">Return Policy: ${p.returnPolicy === RETURN_POLICY_ASSURED ? "Assured" : "Not Assured"}</p>
-        <p class="hint">${isOutOfStock ? "Out of Stock" : "In Stock"}</p>
-        <div class="btn-row">
-          <button class="btn" data-add-cart="${p.id}" ${isOutOfStock ? "disabled" : ""}>${isOutOfStock ? "Out of Stock" : "Add to Cart"}</button>
-          <button class="btn ghost" data-add-wish="${p.id}" ${isOutOfStock ? "disabled" : ""}>Wishlist</button>
-        </div>
-        ${
-          isAdmin
-            ? `
-          <div class="btn-row">
-            <button class="btn ghost" data-edit-product="${p.id}">Edit</button>
-            <button class="btn ghost" data-delete-product="${p.id}">Delete</button>
+        <img src="${imageSrc}" alt="${escapeHtml(p.title)}" loading="lazy" onerror="this.src='${FALLBACK_IMAGE}'" />
+        <div class="product-body">
+          <h3>${escapeHtml(p.title)}</h3>
+          <p class="price">${formatMoney(p.price)}</p>
+          <p class="desc">${escapeHtml(p.description)}</p>
+          <div class="product-meta">
+            <span class="pill">${p.returnPolicy === RETURN_POLICY_ASSURED ? "Assured Return" : "No Assured Return"}</span>
+            <span class="pill ${isOutOfStock ? "pill-danger" : "pill-ok"}">${isOutOfStock ? "Out of Stock" : "In Stock"}</span>
           </div>
-        `
-            : ""
-        }
+          <div class="btn-row">
+            <button class="btn" data-add-cart="${escapeHtml(p.id)}" ${isOutOfStock ? "disabled" : ""}>${isOutOfStock ? "Out of Stock" : "Add to Cart"}</button>
+            <button class="btn ghost" data-add-wish="${escapeHtml(p.id)}" ${isOutOfStock ? "disabled" : ""}>Wishlist</button>
+          </div>
+          ${
+            isAdmin
+              ? `
+            <div class="btn-row">
+              <button class="btn ghost" data-edit-product="${escapeHtml(p.id)}">Edit</button>
+              <button class="btn ghost" data-delete-product="${escapeHtml(p.id)}">Delete</button>
+            </div>
+          `
+              : ""
+          }
+        </div>
       </article>
     `;
     })
@@ -349,7 +387,7 @@ function renderProducts() {
 
 function renderCart() {
   if (!state.cart.length) {
-    cartItems.innerHTML = "<p class='hint'>Cart is empty.</p>";
+    cartItems.innerHTML = "<div class='empty-state'>Your cart is empty.</div>";
     cartTotal.textContent = formatMoney(0);
     return;
   }
@@ -361,7 +399,7 @@ function renderCart() {
       return `
         <div class="list-item">
           <div>
-            <strong>${product.title}</strong>
+            <strong>${escapeHtml(product.title)}</strong>
             <div class="hint">${item.qty} x ${formatMoney(product.price)}</div>
           </div>
           <div class="item-actions">
@@ -383,7 +421,7 @@ function renderCart() {
 
 function renderWishlist() {
   if (!state.wishlist.length) {
-    wishlistItems.innerHTML = "<p class='hint'>Wishlist is empty.</p>";
+    wishlistItems.innerHTML = "<div class='empty-state'>No wishlist items yet.</div>";
     return;
   }
 
@@ -393,8 +431,8 @@ function renderWishlist() {
     .map(
       (p) => `
       <div class="list-item">
-        <span>${p.title}</span>
-        <button class="mini danger" data-wrm="${p.id}">Remove</button>
+        <span>${escapeHtml(p.title)}</span>
+        <button class="mini danger" data-wrm="${escapeHtml(p.id)}">Remove</button>
       </div>
     `
     )
@@ -590,7 +628,7 @@ function handleCheckout(event) {
     `Products:%0A${encodeURIComponent(lines.join("\n"))}%0A%0A` +
     `Total: ${encodeURIComponent(total)}`;
 
-  const whatsappNumber = state.settings.whatsappNumber || defaultSettings.whatsappNumber;
+  const whatsappNumber = sanitizeWhatsAppNumber(state.settings.whatsappNumber);
   window.open(`https://wa.me/${whatsappNumber}?text=${message}`, "_blank");
   alert("Order submitted. WhatsApp is opening.");
 }

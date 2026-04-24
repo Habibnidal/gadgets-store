@@ -5,6 +5,8 @@ const RETURN_POLICY_ASSURED = "assured";
 const RETURN_POLICY_NOT_ASSURED = "not_assured";
 const STOCK_IN = "in_stock";
 const STOCK_OUT = "out_of_stock";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?auto=format&fit=crop&w=800&q=80";
 
 const defaultProducts = [
   {
@@ -57,7 +59,7 @@ const defaultSettings = {
   themeBackground: "#f0f4ff",
   heroStats: [
     { id: "deliveries", value: "250+", label: "Gadgets Delivered" },
-    { id: "rating", value: "4.9★", label: "Customer Rating" },
+    { id: "rating", value: "4.9/5", label: "Customer Rating" },
     { id: "support", value: "24/7", label: "WhatsApp Support" }
   ],
   features: [
@@ -91,6 +93,7 @@ const state = {
 };
 
 const $ = (id) => document.getElementById(id);
+const adminLoginSection = $("adminLoginSection");
 const adminContent = $("adminContent");
 const productsCard = $("productsCard");
 const adminProductList = $("adminProductList");
@@ -107,6 +110,33 @@ const featuresCard = $("featuresCard");
 const featureForm = $("featureForm");
 const cancelFeatureEdit = $("cancelFeatureEdit");
 const featureList = $("featureList");
+const adminStats = $("adminStats");
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeUrl(raw, options = {}) {
+  const { allowDataImage = false, fallback = "#" } = options;
+  const value = String(raw || "").trim();
+  if (!value) return fallback;
+
+  if (allowDataImage && value.startsWith("data:image/")) return value;
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return parsed.href;
+  } catch (error) {
+    return fallback;
+  }
+
+  return fallback;
+}
 
 function formatMoney(value) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
@@ -254,6 +284,7 @@ async function loadSettings() {
 }
 
 function openAdminContent() {
+  adminLoginSection.classList.add("hidden");
   adminContent.classList.remove("hidden");
   productsCard.classList.remove("hidden");
   settingsCard.classList.remove("hidden");
@@ -261,6 +292,7 @@ function openAdminContent() {
 }
 
 function closeAdminContent() {
+  adminLoginSection.classList.remove("hidden");
   adminContent.classList.add("hidden");
   productsCard.classList.add("hidden");
   settingsCard.classList.add("hidden");
@@ -268,29 +300,55 @@ function closeAdminContent() {
 }
 
 function renderList() {
+  const totalProducts = state.products.length;
+  const outOfStockCount = state.products.filter((product) => product.stockStatus === STOCK_OUT).length;
+  const assuredCount = state.products.filter((product) => product.returnPolicy === RETURN_POLICY_ASSURED).length;
+
+  if (adminStats) {
+    adminStats.innerHTML = `
+      <article class="stat-chip">
+        <span class="stat-val">${totalProducts}</span>
+        <span class="stat-label">Total Products</span>
+      </article>
+      <article class="stat-chip">
+        <span class="stat-val">${assuredCount}</span>
+        <span class="stat-label">Assured Return</span>
+      </article>
+      <article class="stat-chip">
+        <span class="stat-val">${outOfStockCount}</span>
+        <span class="stat-label">Out Of Stock</span>
+      </article>
+    `;
+  }
+
   if (!state.products.length) {
-    adminProductList.innerHTML = "<p class='hint'>No products available.</p>";
+    adminProductList.innerHTML = "<div class='hint'>No products available.</div>";
     return;
   }
 
   adminProductList.innerHTML = state.products
-    .map(
-      (product) => `
+    .map((product) => {
+      const imageSrc = safeUrl(product.image, { allowDataImage: true, fallback: FALLBACK_IMAGE });
+      const isOutOfStock = product.stockStatus === STOCK_OUT;
+      return `
       <div class="list-item admin-product-row">
-        <div>
-          <strong>${product.title}</strong>
-          <div class="hint">${formatMoney(product.price)}</div>
-          <div class="hint">${product.description}</div>
-          <div class="hint">Return Policy: ${product.returnPolicy === RETURN_POLICY_ASSURED ? "Assured" : "Not Assured"}</div>
-          <div class="hint">Stock: ${product.stockStatus === STOCK_OUT ? "Out of Stock" : "In Stock"}</div>
+        <img src="${imageSrc}" alt="${escapeHtml(product.title)}" loading="lazy" onerror="this.src='${FALLBACK_IMAGE}'" />
+        <div class="item-info">
+          <strong class="item-name">${escapeHtml(product.title)}</strong>
+          <div class="item-meta">
+            <span class="item-price">${formatMoney(product.price)}</span>
+            <span class="item-badge ${product.returnPolicy === RETURN_POLICY_ASSURED ? "assured" : "not-assured"}">${product.returnPolicy === RETURN_POLICY_ASSURED ? "Assured" : "Not Assured"}</span>
+            <span class="item-badge ${isOutOfStock ? "out-stock" : "in-stock"}">${isOutOfStock ? "Out of Stock" : "In Stock"}</span>
+          </div>
+          <div class="hint">${escapeHtml(product.description)}</div>
         </div>
         <div class="item-actions">
-          <button class="mini" data-edit="${product.id}">Edit</button>
-          <button class="mini danger" data-delete="${product.id}">Delete</button>
+          <button class="mini" data-edit="${escapeHtml(product.id)}">Edit</button>
+          <button class="mini danger" data-delete="${escapeHtml(product.id)}">Delete</button>
         </div>
       </div>
-    `
-    )
+    `;
+    })
     .join("");
 }
 
@@ -364,13 +422,13 @@ function renderFeatureList() {
       (feature) => `
       <div class="list-item admin-product-row">
         <div>
-          <strong>${feature.title}</strong>
-          <div class="hint">${feature.description || ""}</div>
-          <div class="hint">Icon: ${feature.icon || "⭐"}</div>
+          <strong>${escapeHtml(feature.title)}</strong>
+          <div class="hint">${escapeHtml(feature.description || "")}</div>
+          <div class="hint">Icon: ${escapeHtml(feature.icon || "*")}</div>
         </div>
         <div class="item-actions">
-          <button class="mini" data-feature-edit="${feature.id}">Edit</button>
-          <button class="mini danger" data-feature-delete="${feature.id}">Delete</button>
+          <button class="mini" data-feature-edit="${escapeHtml(feature.id)}">Edit</button>
+          <button class="mini danger" data-feature-delete="${escapeHtml(feature.id)}">Delete</button>
         </div>
       </div>
     `

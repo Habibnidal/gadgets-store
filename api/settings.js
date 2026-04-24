@@ -1,4 +1,5 @@
 const SETTINGS_KEY = process.env.SETTINGS_KV_KEY || "naisham_settings_v1";
+const MAX_TEXT = 4000;
 
 const defaultSettings = {
   brandName: "Trust",
@@ -21,7 +22,7 @@ const defaultSettings = {
   themeBackground: "#f0f4ff",
   heroStats: [
     { id: "deliveries", value: "250+", label: "Gadgets Delivered" },
-    { id: "rating", value: "4.9★", label: "Customer Rating" },
+    { id: "rating", value: "4.9/5", label: "Customer Rating" },
     { id: "support", value: "24/7", label: "WhatsApp Support" }
   ],
   features: [
@@ -29,37 +30,60 @@ const defaultSettings = {
       id: "fast-delivery",
       title: "Fast Delivery",
       description: "Quick dispatch with reliable tracking updates.",
-      icon: "🚚"
+      icon: "FD"
     },
     {
       id: "secure-payments",
       title: "Secure Payments",
       description: "Multiple payment options with trusted checkout.",
-      icon: "🔒"
+      icon: "SP"
     },
     {
       id: "support-team",
       title: "Friendly Support",
       description: "We answer your questions in minutes.",
-      icon: "💬"
+      icon: "CS"
     }
   ]
 };
 
+function cleanText(value, maxLength) {
+  return String(value || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .slice(0, maxLength);
+}
+
+function cleanUrl(value, options = {}) {
+  const { allowDataImage = false, allowRelative = false } = options;
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (allowDataImage && raw.startsWith("data:image/")) return raw;
+
+  try {
+    const parsed = new URL(raw, "https://example.com");
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return "";
+    if (!allowRelative && parsed.hostname === "example.com" && !raw.startsWith("http")) return "";
+    return raw;
+  } catch (error) {
+    return "";
+  }
+}
+
 function normalizeFeature(feature) {
   return {
-    id: String(feature?.id || "").trim(),
-    title: String(feature?.title || "").trim(),
-    description: String(feature?.description || "").trim(),
-    icon: String(feature?.icon || "").trim()
+    id: cleanText(feature?.id, 120),
+    title: cleanText(feature?.title, 120),
+    description: cleanText(feature?.description, 260),
+    icon: cleanText(feature?.icon, 24)
   };
 }
 
 function normalizeStat(stat) {
   return {
-    id: String(stat?.id || "").trim(),
-    value: String(stat?.value || "").trim(),
-    label: String(stat?.label || "").trim()
+    id: cleanText(stat?.id, 120),
+    value: cleanText(stat?.value, 40),
+    label: cleanText(stat?.label, 60)
   };
 }
 
@@ -77,24 +101,24 @@ function sanitizeFeatures(raw) {
 
 function normalizeSettings(raw = {}) {
   return {
-    brandName: String(raw.brandName || defaultSettings.brandName).trim(),
-    brandEyebrow: String(raw.brandEyebrow || defaultSettings.brandEyebrow).trim(),
-    brandSubtitle: String(raw.brandSubtitle || defaultSettings.brandSubtitle).trim(),
-    logo: String(raw.logo || defaultSettings.logo).trim(),
-    heroTitle: String(raw.heroTitle || defaultSettings.heroTitle).trim(),
-    heroSubtitle: String(raw.heroSubtitle || defaultSettings.heroSubtitle).trim(),
-    heroBadge: String(raw.heroBadge || defaultSettings.heroBadge).trim(),
-    heroCtaText: String(raw.heroCtaText || defaultSettings.heroCtaText).trim(),
-    heroCtaLink: String(raw.heroCtaLink || defaultSettings.heroCtaLink).trim(),
-    whatsappNumber: String(raw.whatsappNumber || defaultSettings.whatsappNumber).trim(),
-    contactEmail: String(raw.contactEmail || defaultSettings.contactEmail).trim(),
-    contactPhone: String(raw.contactPhone || defaultSettings.contactPhone).trim(),
-    contactAddress: String(raw.contactAddress || defaultSettings.contactAddress).trim(),
-    themePrimary: String(raw.themePrimary || defaultSettings.themePrimary).trim(),
-    themePrimaryDark: String(raw.themePrimaryDark || defaultSettings.themePrimaryDark).trim(),
-    themePrimaryLight: String(raw.themePrimaryLight || defaultSettings.themePrimaryLight).trim(),
-    themeAccent: String(raw.themeAccent || defaultSettings.themeAccent).trim(),
-    themeBackground: String(raw.themeBackground || defaultSettings.themeBackground).trim(),
+    brandName: cleanText(raw.brandName || defaultSettings.brandName, 120),
+    brandEyebrow: cleanText(raw.brandEyebrow || defaultSettings.brandEyebrow, 120),
+    brandSubtitle: cleanText(raw.brandSubtitle || defaultSettings.brandSubtitle, 200),
+    logo: cleanUrl(raw.logo || defaultSettings.logo, { allowDataImage: true, allowRelative: true }) || defaultSettings.logo,
+    heroTitle: cleanText(raw.heroTitle || defaultSettings.heroTitle, 180),
+    heroSubtitle: cleanText(raw.heroSubtitle || defaultSettings.heroSubtitle, MAX_TEXT),
+    heroBadge: cleanText(raw.heroBadge || defaultSettings.heroBadge, 100),
+    heroCtaText: cleanText(raw.heroCtaText || defaultSettings.heroCtaText, 60),
+    heroCtaLink: cleanUrl(raw.heroCtaLink || defaultSettings.heroCtaLink),
+    whatsappNumber: cleanText(raw.whatsappNumber || defaultSettings.whatsappNumber, 30),
+    contactEmail: cleanText(raw.contactEmail || defaultSettings.contactEmail, 150),
+    contactPhone: cleanText(raw.contactPhone || defaultSettings.contactPhone, 50),
+    contactAddress: cleanText(raw.contactAddress || defaultSettings.contactAddress, 200),
+    themePrimary: cleanText(raw.themePrimary || defaultSettings.themePrimary, 20),
+    themePrimaryDark: cleanText(raw.themePrimaryDark || defaultSettings.themePrimaryDark, 20),
+    themePrimaryLight: cleanText(raw.themePrimaryLight || defaultSettings.themePrimaryLight, 20),
+    themeAccent: cleanText(raw.themeAccent || defaultSettings.themeAccent, 20),
+    themeBackground: cleanText(raw.themeBackground || defaultSettings.themeBackground, 20),
     heroStats: sanitizeStats(raw.heroStats),
     features: sanitizeFeatures(raw.features)
   };
